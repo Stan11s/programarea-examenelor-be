@@ -1,4 +1,5 @@
 ﻿using API.Data;
+using API.Enum;
 using API.Mapping;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,20 +18,20 @@ namespace API.Controllers
         }
 
         [HttpGet("GetCoursersForExamByUserID")]
-        public async Task<IActionResult> GetCoursersForExamByUserID(int userId, string role)
+        public async Task<IActionResult> GetCoursersForExamByUserID(int userId)
         {
-            if (role == "Student")
+            
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
             {
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null)
-                {
-                    return NotFound("User not found");
-                }
-
+                return NotFound("User not found");
+            }
+            if(user.Status== StatusUserEnum.Student)
+            {
                 var student = await _context.Students
-                    .Include(s => s.Group)
-                    .ThenInclude(g => g.Specialization)
-                    .FirstOrDefaultAsync(s => s.UserID == userId);
+                .Include(s => s.Group)
+                .ThenInclude(g => g.Specialization)
+                .FirstOrDefaultAsync(s => s.UserID == userId);
 
                 if (student == null)
                 {
