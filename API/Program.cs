@@ -1,4 +1,5 @@
 ﻿using API.Data;
+using API.Mapping;
 using API.Services;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("APIConnectionString")));
-
+builder.Services.AddScoped<CourseMapper>(); 
 
 builder.Services.AddScoped<FacultyService>();
 var app = builder.Build();  
