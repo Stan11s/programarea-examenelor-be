@@ -26,7 +26,7 @@ namespace API.Controllers
             {
                 return NotFound("User not found");
             }
-            if(user.Status== StatusUserEnum.Student)
+            if(user.Role== StatusUserEnum.Student)
             {
                 var student = await _context.Students
                 .Include(s => s.Group)
