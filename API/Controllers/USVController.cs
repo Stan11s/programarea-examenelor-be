@@ -26,6 +26,7 @@ namespace API.Controllers
                 if (faculties == null || !faculties.Any())
                 {
                     return NotFound("No faculties found.");
+
                 }
                 foreach (var faculty in faculties)
                 {
