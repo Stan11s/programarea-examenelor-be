@@ -1,31 +1,50 @@
 ﻿using API.Data;
 using API.Mapping;
 using API.Services;
+
 using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-// Add services to the container.
+// Adaugă serviciul CORS pentru a permite accesul din orice domeniu
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", builder =>
+    {
+        builder.AllowAnyOrigin()  // Permite accesul din orice domeniu
+               .AllowAnyMethod()  // Permite orice metodă HTTP (GET, POST, PUT, DELETE, etc.)
+               .AllowAnyHeader(); // Permite orice header
+    });
+});
 
+// Adaugă serviciile la container
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+// Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configurarea conexiunii la baza de date
 builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("APIConnectionString")));
-builder.Services.AddScoped<CourseMapper>(); 
 
+// Adaugă mapping-ul și serviciile
+builder.Services.AddScoped<CourseMapper>();
 builder.Services.AddScoped<FacultyService>();
-var app = builder.Build();  
 
-// Configure the HTTP request pipeline.
+var app = builder.Build();
+
+// Configurează pipeline-ul HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Aplică politica CORS
+app.UseCors("AllowAllOrigins");
 
+app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
