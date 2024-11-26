@@ -43,7 +43,7 @@ namespace API.Controllers
             _context.Courses.Add(course);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCourse", new { id = course.CourseID }, course);
+            return Ok(course);
         }
 
         [HttpPost("department")]
@@ -99,7 +99,7 @@ namespace API.Controllers
             _context.LabHolders.Add(labHolders);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetLabHolder", new { id = labHolders.LabId }, labHolders);
+            return Ok(labHolders);
         }
 
         [HttpPost("professor")]
