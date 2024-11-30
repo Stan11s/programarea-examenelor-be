@@ -10,7 +10,7 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 // Adaugă serviciul CORS pentru a permite accesul din orice domeniu
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins", builder =>
+    options.AddPolicy("AllowAll", builder =>
     {
         builder.AllowAnyOrigin()  // Permite accesul din orice domeniu
                .AllowAnyMethod()  // Permite orice metodă HTTP (GET, POST, PUT, DELETE, etc.)
@@ -42,11 +42,16 @@ if (app.Environment.IsDevelopment())
 }
 
 // Aplică politica CORS
-app.UseCors("AllowAllOrigins");
+app.UseCors("AllowAll");
+app.UseRouting();
+
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
-
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 app.MapControllers();
 
 app.Run();
