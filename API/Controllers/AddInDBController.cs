@@ -184,7 +184,7 @@ namespace API.Controllers
             var labHolder = await _context.LabHolders
                 .Include(lh => lh.Course)
                 .Include(lh => lh.Professor)
-                .Where(lh => lh.LabId == examRequestDto.AssistantID && lh.CourseID == examRequestDto.CourseID)
+                .Where(lh => lh.ProfID == examRequestDto.AssistantID && lh.CourseID == examRequestDto.CourseID)
                 .FirstOrDefaultAsync();
 
             if (labHolder == null)
