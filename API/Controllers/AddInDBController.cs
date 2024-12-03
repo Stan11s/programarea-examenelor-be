@@ -227,7 +227,21 @@ namespace API.Controllers
 
             return Ok(examRequest);
         }
-
-
+        [HttpGet("GetAllGroups")]
+        public async Task<IActionResult> GetAllGroups()
+        {
+            try
+            {
+                var groups = await _context.Groups
+                    .Include(g => g.Specialization)
+                    .ToListAsync();
+                return Ok(groups);
+            }
+            catch (Exception ex)
+            {
+                // Gestionează erorile
+                return StatusCode(500, $"A apărut o eroare: {ex.Message}");
+            }
+        }
     }
 }
