@@ -1,6 +1,8 @@
 ﻿using API.Data;
 using API.Enum;
 using API.Mapping;
+using API.Models;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 namespace API.Controllers
@@ -127,8 +129,8 @@ namespace API.Controllers
                 {
                     return NotFound($"No exam requests found for Group ID: {groupId}");
                 }
-
-                return Ok(examRequests);
+                var examDTOs = examRequests.Select(exam => _courseMapper.MapToExamRequestDto(exam)).ToList();
+                return Ok(examDTOs);
             }
             catch (Exception ex)
             {
