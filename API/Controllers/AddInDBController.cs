@@ -57,7 +57,7 @@ namespace API.Controllers
             _context.Departments.Add(department);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDepartment", new { id = department.DepartmentID }, department);
+            return Ok(department);
         }
 
         [HttpPost("faculty")]
@@ -71,7 +71,7 @@ namespace API.Controllers
             _context.Faculties.Add(faculty);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetFaculty", new { id = faculty.FacultyID }, faculty);
+            return Ok(faculty);
         }
 
         [HttpPost("group")]
@@ -85,7 +85,7 @@ namespace API.Controllers
             _context.Groups.Add(group);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetGroup", new { id = group.GroupID }, group);
+            return Ok(group);
         }
 
         [HttpPost("labholder")]
@@ -113,7 +113,7 @@ namespace API.Controllers
             _context.Professors.Add(professor);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProfessor", new { id = professor.ProfID }, professor);
+            return Ok(professor);
         }
 
         [HttpPost("specialization")]
@@ -151,7 +151,7 @@ namespace API.Controllers
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetStudent", new { id = student.StudentID }, student);
+            return Ok(student);
         }
         [HttpPost("CreateExamRequest")]
         public async Task<IActionResult> CreateExamRequest([FromBody] CreateExamRequestDto examRequestDto)
