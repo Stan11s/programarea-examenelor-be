@@ -9,6 +9,7 @@ namespace API.Mapping
         {
             return new CourseDTO
             {
+                Id = course.CourseID,
                 Title = course.Title,
                 NumeProfesor = course.Professor?.User?.FirstName,
                 PrenumeProfesor = course.Professor?.User?.LastName,
@@ -19,6 +20,7 @@ namespace API.Mapping
         {
             return new ExamRequestDto
             {
+                Id = examRequest.RequestID,
                 CourseName = examRequest.Course?.Title,
                 FirstNameProf = examRequest.Course?.Professor?.User?.FirstName,
                 LastNameProf = examRequest.Course?.Professor?.User?.LastName,

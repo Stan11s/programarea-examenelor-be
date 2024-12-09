@@ -2,6 +2,7 @@
 {
     public class ExamRequestDto
     {
+        public int Id { get; set; } 
         public string CourseName { get; set; }
         public string FirstNameProf { get; set; }
         public string LastNameProf { get; set; }
