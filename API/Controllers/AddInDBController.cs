@@ -243,5 +243,20 @@ namespace API.Controllers
                 return StatusCode(500, $"A apărut o eroare: {ex.Message}");
             }
         }
+        [HttpGet("GetFaculties")]
+        public async Task<IActionResult> GetFaculties()
+        {
+            try
+            {
+                var faculties = await _context.Faculties
+                    .ToListAsync();
+                return Ok(faculties);
+            }
+            catch (Exception ex)
+            {
+                // Gestionează erorile
+                return StatusCode(500, $"A apărut o eroare: {ex.Message}");
+            }
+        }
     }
 }
