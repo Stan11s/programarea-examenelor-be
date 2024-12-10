@@ -1,6 +1,9 @@
 ﻿using API.Data;
 using API.Enum;
 using API.Mapping;
+using API.Models;
+using API.Models.DTOmodels;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 namespace API.Controllers
@@ -127,13 +130,102 @@ namespace API.Controllers
                 {
                     return NotFound($"No exam requests found for Group ID: {groupId}");
                 }
-
-                return Ok(examRequests);
+                var examDTOs = examRequests.Select(exam => _courseMapper.MapToExamRequestDto(exam)).ToList();
+                return Ok(examDTOs);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
+        }
+        [HttpGet("GetAllRooms")]
+        public async Task<IActionResult> GetAllRooms()
+        {
+            try
+            {
+                var rooms = await _context.Rooms
+                    .Include(r => r.Department)
+                    .Include(r => r.ExamRequestRooms)
+                        .ThenInclude(er => er.ExamRequest)
+                         .Take(10)
+                    .ToListAsync();
+
+                if (rooms == null || !rooms.Any())
+                {
+                    return NotFound("No rooms found in the database.");
+                }
+
+                var roomDTOs = rooms.Select(room => new
+                {
+                    room.RoomID,
+                    room.Name,
+                    room.Location,
+                    room.Capacity,
+                    room.Description,
+                    room.CreationDate,
+                    DepartmentName = room.Department?.Name, 
+                    ExamRequestCount = room.ExamRequestRooms?.Count ?? 0
+                });
+
+                return Ok(roomDTOs);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        [HttpGet("GetAssistentByCourse/{courseId}")]
+        public async Task<IActionResult> GetAssistentByCourse(int courseId)
+        {
+            try
+            {
+                var professors = await _context.LabHolders
+                 .Include(l => l.Professor)
+                     .ThenInclude(p => p.User) 
+                 .Where(l => l.CourseID == courseId) 
+                 .Select(l => new ProfessorDTO
+                 {
+                     ProfID = l.Professor.ProfID,
+                     LastName = l.Professor.User.LastName,
+                     FirstName = l.Professor.User.FirstName 
+                 })
+                 .Distinct() // Evită duplicatele
+                 .ToListAsync();
+                if (professors == null || !professors.Any())
+                {
+                    return NotFound($"No professors found for CourseID: {courseId}");
+                }
+
+                return Ok(professors);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPatch("UpdateExamStatus/{id}")]
+        public async Task<IActionResult> UpdateExamStatus(int id, string status)
+        {
+            if (string.IsNullOrEmpty(status))
+            {
+                return BadRequest("Invalid status data.");
+            }
+
+            var existingExamRequest = await _context.ExamRequests.FindAsync(id);
+            if (existingExamRequest == null)
+            {
+                return NotFound("Exam request not found.");
+            }
+
+            // Actualizarea câmpului `Status`
+            existingExamRequest.Status = status;
+
+            // Salvarea modificărilor
+            _context.ExamRequests.Update(existingExamRequest);
+            await _context.SaveChangesAsync();
+
+            return Ok(existingExamRequest);
         }
 
     }

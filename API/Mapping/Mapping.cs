@@ -9,10 +9,24 @@ namespace API.Mapping
         {
             return new CourseDTO
             {
+                Id = course.CourseID,
                 Title = course.Title,
                 NumeProfesor = course.Professor?.User?.FirstName,
                 PrenumeProfesor = course.Professor?.User?.LastName,
                 Status = course.Professor?.User?.Status
+            };
+        }
+        public ExamRequestDto MapToExamRequestDto(ExamRequest examRequest)
+        {
+            return new ExamRequestDto
+            {
+                Id = examRequest.RequestID,
+                CourseName = examRequest.Course?.Title,
+                FirstNameProf = examRequest.Course?.Professor?.User?.FirstName,
+                LastNameProf = examRequest.Course?.Professor?.User?.LastName,
+                ExamDate = examRequest.Date,
+                TimeStart = examRequest.TimeStart,
+                Status = examRequest.Status
             };
         }
     }

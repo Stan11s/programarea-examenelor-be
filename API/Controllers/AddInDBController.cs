@@ -57,7 +57,7 @@ namespace API.Controllers
             _context.Departments.Add(department);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDepartment", new { id = department.DepartmentID }, department);
+            return Ok(department);
         }
 
         [HttpPost("faculty")]
@@ -71,7 +71,7 @@ namespace API.Controllers
             _context.Faculties.Add(faculty);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetFaculty", new { id = faculty.FacultyID }, faculty);
+            return Ok(faculty);
         }
 
         [HttpPost("group")]
@@ -85,7 +85,7 @@ namespace API.Controllers
             _context.Groups.Add(group);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetGroup", new { id = group.GroupID }, group);
+            return Ok(group);
         }
 
         [HttpPost("labholder")]
@@ -113,7 +113,7 @@ namespace API.Controllers
             _context.Professors.Add(professor);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProfessor", new { id = professor.ProfID }, professor);
+            return Ok(professor);
         }
 
         [HttpPost("specialization")]
@@ -151,7 +151,7 @@ namespace API.Controllers
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetStudent", new { id = student.StudentID }, student);
+            return Ok(student);
         }
         [HttpPost("CreateExamRequest")]
         public async Task<IActionResult> CreateExamRequest([FromBody] CreateExamRequestDto examRequestDto)
@@ -184,7 +184,7 @@ namespace API.Controllers
             var labHolder = await _context.LabHolders
                 .Include(lh => lh.Course)
                 .Include(lh => lh.Professor)
-                .Where(lh => lh.LabId == examRequestDto.AssistantID && lh.CourseID == examRequestDto.CourseID)
+                .Where(lh => lh.ProfID == examRequestDto.AssistantID && lh.CourseID == examRequestDto.CourseID)
                 .FirstOrDefaultAsync();
 
             if (labHolder == null)
@@ -227,7 +227,36 @@ namespace API.Controllers
 
             return Ok(examRequest);
         }
-
-
+        [HttpGet("GetAllGroups")]
+        public async Task<IActionResult> GetAllGroups()
+        {
+            try
+            {
+                var groups = await _context.Groups
+                    .Include(g => g.Specialization)
+                    .ToListAsync();
+                return Ok(groups);
+            }
+            catch (Exception ex)
+            {
+                // Gestionează erorile
+                return StatusCode(500, $"A apărut o eroare: {ex.Message}");
+            }
+        }
+        [HttpGet("GetFaculties")]
+        public async Task<IActionResult> GetFaculties()
+        {
+            try
+            {
+                var faculties = await _context.Faculties
+                    .ToListAsync();
+                return Ok(faculties);
+            }
+            catch (Exception ex)
+            {
+                // Gestionează erorile
+                return StatusCode(500, $"A apărut o eroare: {ex.Message}");
+            }
+        }
     }
 }
