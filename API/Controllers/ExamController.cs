@@ -23,18 +23,18 @@ namespace API.Controllers
         [HttpGet("GetCoursersForExamByUserID")]
         public async Task<IActionResult> GetCoursersForExamByUserID(int userId)
         {
-            
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
                 return NotFound("User not found");
             }
-            if(user.Role== StatusUserEnum.Student)
+
+            if (user.Role == StatusUserEnum.Student)
             {
                 var student = await _context.Students
-                .Include(s => s.Group)
-                .ThenInclude(g => g.Specialization)
-                .FirstOrDefaultAsync(s => s.UserID == userId);
+                    .Include(s => s.Group)
+                    .ThenInclude(g => g.Specialization)
+                    .FirstOrDefaultAsync(s => s.UserID == userId);
 
                 if (student == null)
                 {
@@ -43,6 +43,7 @@ namespace API.Controllers
 
                 var specializationId = student.Group.SpecializationID;
 
+                // Obținem cursurile pentru specializarea studentului
                 var courses = await _context.Courses
                     .Where(c => c.SpecializationID == specializationId)
                     .Include(c => c.Professor)
@@ -54,7 +55,22 @@ namespace API.Controllers
                     return NotFound("No courses found for this student.");
                 }
 
-                var courseDTOs = courses.Select(course => _courseMapper.MapToCourseDTO(course)).ToList(); // Use _courseMapper
+                var examRequests = await _context.ExamRequests
+                    .Where(er => er.GroupID == student.GroupID)
+                    .Select(er => er.CourseID)
+                    .ToListAsync();
+
+                var availableCourses = courses
+                    .Where(course => !examRequests.Contains(course.CourseID))
+                    .ToList();
+
+                if (availableCourses == null || !availableCourses.Any())
+                {
+                    return NotFound("No available courses for this student.");
+                }
+
+                // Mapează cursurile rămase în DTO-uri
+                var courseDTOs = availableCourses.Select(course => _courseMapper.MapToCourseDTO(course)).ToList();
 
                 return Ok(courseDTOs);
             }
@@ -63,6 +79,7 @@ namespace API.Controllers
                 return BadRequest("Invalid role.");
             }
         }
+
         [HttpGet("examrequests")]
         public async Task<IActionResult> GetAllExamRequests()
         {
