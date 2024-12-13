@@ -1,7 +1,6 @@
 ﻿using API.Data;
 using API.Enum;
 using API.Mapping;
-using API.Models;
 using API.Models.DTOmodels;
 
 using Microsoft.AspNetCore.Mvc;
@@ -241,13 +240,13 @@ namespace API.Controllers
             {
                 var professors = await _context.LabHolders
                  .Include(l => l.Professor)
-                     .ThenInclude(p => p.User) 
-                 .Where(l => l.CourseID == courseId) 
+                     .ThenInclude(p => p.User)
+                 .Where(l => l.CourseID == courseId)
                  .Select(l => new ProfessorDTO
                  {
                      ProfID = l.Professor.ProfessorID,
                      LastName = l.Professor.User.LastName,
-                     FirstName = l.Professor.User.FirstName 
+                     FirstName = l.Professor.User.FirstName
                  })
                  .Distinct() // Evită duplicatele
                  .ToListAsync();
