@@ -16,6 +16,7 @@ namespace API.Models
         public virtual User User { get; set; }
 
         [ForeignKey("DepartmentID")]
+#nullable enable
         public virtual Department? Department { get; set; }
     }
 }
