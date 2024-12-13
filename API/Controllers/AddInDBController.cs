@@ -239,7 +239,6 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                // Gestionează erorile
                 return StatusCode(500, $"A apărut o eroare: {ex.Message}");
             }
         }

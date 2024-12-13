@@ -23,18 +23,18 @@ namespace API.Controllers
         [HttpGet("GetCoursersForExamByUserID")]
         public async Task<IActionResult> GetCoursersForExamByUserID(int userId)
         {
-            
             var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
                 return NotFound("User not found");
             }
-            if(user.Role== StatusUserEnum.Student)
+
+            if (user.Role == StatusUserEnum.Student)
             {
                 var student = await _context.Students
-                .Include(s => s.Group)
-                .ThenInclude(g => g.Specialization)
-                .FirstOrDefaultAsync(s => s.UserID == userId);
+                    .Include(s => s.Group)
+                    .ThenInclude(g => g.Specialization)
+                    .FirstOrDefaultAsync(s => s.UserID == userId);
 
                 if (student == null)
                 {
@@ -43,6 +43,7 @@ namespace API.Controllers
 
                 var specializationId = student.Group.SpecializationID;
 
+                // Obținem cursurile pentru specializarea studentului
                 var courses = await _context.Courses
                     .Where(c => c.SpecializationID == specializationId)
                     .Include(c => c.Professor)
@@ -54,7 +55,22 @@ namespace API.Controllers
                     return NotFound("No courses found for this student.");
                 }
 
-                var courseDTOs = courses.Select(course => _courseMapper.MapToCourseDTO(course)).ToList(); // Use _courseMapper
+                var examRequests = await _context.ExamRequests
+                    .Where(er => er.GroupID == student.GroupID)
+                    .Select(er => er.CourseID)
+                    .ToListAsync();
+
+                var availableCourses = courses
+                    .Where(course => !examRequests.Contains(course.CourseID))
+                    .ToList();
+
+                if (availableCourses == null || !availableCourses.Any())
+                {
+                    return NotFound("No available courses for this student.");
+                }
+
+                // Mapează cursurile rămase în DTO-uri
+                var courseDTOs = availableCourses.Select(course => _courseMapper.MapToCourseDTO(course)).ToList();
 
                 return Ok(courseDTOs);
             }
@@ -63,6 +79,7 @@ namespace API.Controllers
                 return BadRequest("Invalid role.");
             }
         }
+
         [HttpGet("examrequests")]
         public async Task<IActionResult> GetAllExamRequests()
         {
@@ -101,12 +118,12 @@ namespace API.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        [HttpGet("examrequests/group/{groupId}")]
-        public async Task<IActionResult> GetExamRequestsByGroupID(int groupId)
+        [HttpGet("GetExamRequestsByGroupID/{groupId}")]
+        public async Task<IActionResult> GetExamRequestsByGroupID(int groupId, string status = null)
         {
             try
             {
-                var examRequests = await _context.ExamRequests
+                var query = _context.ExamRequests
                     .Include(e => e.Group)
                         .ThenInclude(g => g.Specialization)
                         .ThenInclude(s => s.Faculty)
@@ -123,13 +140,64 @@ namespace API.Controllers
                     .Include(e => e.Session)
                     .Include(e => e.ExamRequestRooms)
                         .ThenInclude(er => er.Room)
-                    .Where(e => e.Group.GroupID == groupId) 
-                    .ToListAsync();
+                    .Where(e => e.Group.GroupID == groupId);
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    query = query.Where(e => e.Status == status);
+                }
+
+                var examRequests = await query.ToListAsync();
 
                 if (examRequests == null || !examRequests.Any())
                 {
                     return NotFound($"No exam requests found for Group ID: {groupId}");
                 }
+
+                var examDTOs = examRequests.Select(exam => _courseMapper.MapToExamRequestDto(exam)).ToList();
+                return Ok(examDTOs);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+        [HttpGet("GetExamRequestsByProfID/{profId}")]
+        public async Task<IActionResult> GetExamRequestsByProfID(int profId, string status = null)
+        {
+            try
+            {
+                var query = _context.ExamRequests
+                    .Include(e => e.Group)
+                        .ThenInclude(g => g.Specialization)
+                        .ThenInclude(s => s.Faculty)
+                    .Include(e => e.Course)
+                        .ThenInclude(c => c.Professor)
+                            .ThenInclude(p => p.Department)
+                    .Include(e => e.Course)
+                        .ThenInclude(c => c.Professor)
+                            .ThenInclude(p => p.User)
+                    .Include(e => e.Assistant)
+                        .ThenInclude(a => a.User)
+                    .Include(e => e.Assistant)
+                        .ThenInclude(a => a.Department)
+                    .Include(e => e.Session)
+                    .Include(e => e.ExamRequestRooms)
+                        .ThenInclude(er => er.Room)
+                    .Where(e => e.Course.ProfID == profId);
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    query = query.Where(e => e.Status == status);
+                }
+
+                var examRequests = await query.ToListAsync();
+
+                if (examRequests == null || !examRequests.Any())
+                {
+                    return NotFound($"No exam requests found for Group ID: {profId}");
+                }
+
                 var examDTOs = examRequests.Select(exam => _courseMapper.MapToExamRequestDto(exam)).ToList();
                 return Ok(examDTOs);
             }
