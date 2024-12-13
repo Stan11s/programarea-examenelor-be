@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Models
 {
     public class ExamRequest
     {
         [Key]
-        public int RequestID { get; set; }
+        public int ExamRequestID { get; set; }
         public int GroupID { get; set; }
         public int CourseID { get; set; }
         public int AssistantID { get; set; }
@@ -14,18 +14,22 @@ namespace API.Models
         public string Type { get; set; }
         public DateTime Date { get; set; }
         public TimeSpan TimeStart { get; set; }
-        public TimeSpan Duration { get; set; }
+        public TimeSpan TimeEnd { get; set; }
         public string Details { get; set; }
         public string Status { get; set; }
         public DateTime CreationDate { get; set; }
 
+        [ForeignKey("GroupID")]
         public virtual Group Group { get; set; }
-        public virtual Course Course { get; set; }
-        public virtual Professor Assistant { get; set; }
-        public virtual Session Session { get; set; }
 
-        [JsonIgnore] 
-        public List<ExamRequestRoom> ExamRequestRooms { get; set; }
+        [ForeignKey("CourseID")]
+        public virtual Course Course { get; set; }
+
+        [ForeignKey("AssistantID")]
+        public virtual Professor Assistant { get; set; }
+
+        [ForeignKey("SessionID")]
+        public virtual Session Session { get; set; }
     }
 
 

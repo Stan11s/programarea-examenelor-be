@@ -1,5 +1,5 @@
-﻿using API.Models.DTOmodels;
-using API.Models;
+﻿using API.Models;
+using API.Models.DTOmodels;
 
 namespace API.Mapping
 {
@@ -20,7 +20,7 @@ namespace API.Mapping
         {
             return new ExamRequestDto
             {
-                Id = examRequest.RequestID,
+                Id = examRequest.ExamRequestID,
                 CourseName = examRequest.Course?.Title,
                 FirstNameProf = examRequest.Course?.Professor?.User?.FirstName,
                 LastNameProf = examRequest.Course?.Professor?.User?.LastName,

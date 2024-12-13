@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20241118192541_MODIFCAREROOMS")]
-    partial class MODIFCAREROOMS
+    [Migration("20241213022708_NewSchema")]
+    partial class NewSchema
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -38,7 +38,7 @@ namespace API.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProfID")
+                    b.Property<int>("ProfessorID")
                         .HasColumnType("int");
 
                     b.Property<int>("SpecializationID")
@@ -52,7 +52,7 @@ namespace API.Migrations
 
                     b.HasKey("CourseID");
 
-                    b.HasIndex("ProfID");
+                    b.HasIndex("ProfessorID");
 
                     b.HasIndex("SpecializationID");
 
@@ -88,11 +88,11 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.ExamRequest", b =>
                 {
-                    b.Property<int>("RequestID")
+                    b.Property<int>("ExamRequestID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestID"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExamRequestID"), 1L, 1);
 
                     b.Property<int>("AssistantID")
                         .HasColumnType("int");
@@ -109,9 +109,6 @@ namespace API.Migrations
                     b.Property<string>("Details")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan>("Duration")
-                        .HasColumnType("time");
-
                     b.Property<int>("GroupID")
                         .HasColumnType("int");
 
@@ -121,13 +118,16 @@ namespace API.Migrations
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<TimeSpan>("TimeEnd")
+                        .HasColumnType("time");
+
                     b.Property<TimeSpan>("TimeStart")
                         .HasColumnType("time");
 
                     b.Property<string>("Type")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("RequestID");
+                    b.HasKey("ExamRequestID");
 
                     b.HasIndex("AssistantID");
 
@@ -140,23 +140,18 @@ namespace API.Migrations
                     b.ToTable("ExamRequests");
                 });
 
-            modelBuilder.Entity("API.Models.ExamRequestRoom", b =>
+            modelBuilder.Entity("API.Models.ExamRequestRooms", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
                     b.Property<int>("ExamRequestID")
                         .HasColumnType("int");
 
                     b.Property<int>("RoomID")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime2");
 
-                    b.HasIndex("ExamRequestID");
+                    b.HasKey("ExamRequestID", "RoomID");
 
                     b.HasIndex("RoomID");
 
@@ -177,7 +172,10 @@ namespace API.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("LongName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShortName")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("FacultyID");
@@ -211,37 +209,32 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.LabHolders", b =>
                 {
-                    b.Property<int>("LabId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("CourseID")
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LabId"), 1L, 1);
-
-                    b.Property<int>("CourseID")
+                    b.Property<int>("ProfessorID")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ProfID")
-                        .HasColumnType("int");
+                    b.HasKey("CourseID", "ProfessorID");
 
-                    b.HasKey("LabId");
-
-                    b.HasIndex("CourseID");
-
-                    b.HasIndex("ProfID");
+                    b.HasIndex("ProfessorID");
 
                     b.ToTable("LabHolders");
                 });
 
-            modelBuilder.Entity("API.Models.Modification", b =>
+            modelBuilder.Entity("API.Models.Modifications", b =>
                 {
                     b.Property<int>("ModificationID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ModificationID"), 1L, 1);
+
+                    b.Property<string>("ColumnName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
@@ -252,7 +245,7 @@ namespace API.Migrations
                     b.Property<string>("OldValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Table")
+                    b.Property<string>("TableName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserID")
@@ -267,16 +260,16 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Models.Professor", b =>
                 {
-                    b.Property<int>("ProfID")
+                    b.Property<int>("ProfessorID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProfID"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProfessorID"), 1L, 1);
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DepartmentID")
+                    b.Property<int?>("DepartmentID")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -285,7 +278,7 @@ namespace API.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
-                    b.HasKey("ProfID");
+                    b.HasKey("ProfessorID");
 
                     b.HasIndex("DepartmentID");
 
@@ -302,13 +295,13 @@ namespace API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoomID"), 1L, 1);
 
-                    b.Property<int>("Capacity")
+                    b.Property<int?>("Capacity")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DepartmentID")
+                    b.Property<int?>("DepartmentID")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
@@ -338,14 +331,8 @@ namespace API.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("FirstName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MiddleName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("SpecializationID")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
@@ -354,6 +341,8 @@ namespace API.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("SecretaryID");
+
+                    b.HasIndex("SpecializationID");
 
                     b.HasIndex("UserID");
 
@@ -379,6 +368,9 @@ namespace API.Migrations
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("SessionID");
 
@@ -426,6 +418,9 @@ namespace API.Migrations
                     b.Property<int>("GroupID")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsLeader")
+                        .HasColumnType("bit");
+
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
@@ -448,6 +443,9 @@ namespace API.Migrations
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("FacultyID")
                         .HasColumnType("int");
@@ -473,10 +471,9 @@ namespace API.Migrations
                     b.Property<int>("UniversityID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Username")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("UserID");
+
+                    b.HasIndex("FacultyID");
 
                     b.ToTable("Users");
                 });
@@ -485,7 +482,7 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Models.Professor", "Professor")
                         .WithMany()
-                        .HasForeignKey("ProfID")
+                        .HasForeignKey("ProfessorID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -505,7 +502,7 @@ namespace API.Migrations
                     b.HasOne("API.Models.Faculty", "Faculty")
                         .WithMany()
                         .HasForeignKey("FacultyID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Faculty");
@@ -546,16 +543,16 @@ namespace API.Migrations
                     b.Navigation("Session");
                 });
 
-            modelBuilder.Entity("API.Models.ExamRequestRoom", b =>
+            modelBuilder.Entity("API.Models.ExamRequestRooms", b =>
                 {
                     b.HasOne("API.Models.ExamRequest", "ExamRequest")
-                        .WithMany("ExamRequestRooms")
+                        .WithMany()
                         .HasForeignKey("ExamRequestID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("API.Models.Room", "Room")
-                        .WithMany("ExamRequestRooms")
+                        .WithMany()
                         .HasForeignKey("RoomID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -581,12 +578,12 @@ namespace API.Migrations
                     b.HasOne("API.Models.Course", "Course")
                         .WithMany()
                         .HasForeignKey("CourseID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("API.Models.Professor", "Professor")
                         .WithMany()
-                        .HasForeignKey("ProfID")
+                        .HasForeignKey("ProfessorID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -595,12 +592,12 @@ namespace API.Migrations
                     b.Navigation("Professor");
                 });
 
-            modelBuilder.Entity("API.Models.Modification", b =>
+            modelBuilder.Entity("API.Models.Modifications", b =>
                 {
                     b.HasOne("API.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -611,8 +608,7 @@ namespace API.Migrations
                     b.HasOne("API.Models.Department", "Department")
                         .WithMany()
                         .HasForeignKey("DepartmentID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("API.Models.User", "User")
                         .WithMany()
@@ -629,20 +625,26 @@ namespace API.Migrations
                 {
                     b.HasOne("API.Models.Department", "Department")
                         .WithMany()
-                        .HasForeignKey("DepartmentID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DepartmentID");
 
                     b.Navigation("Department");
                 });
 
             modelBuilder.Entity("API.Models.Secretary", b =>
                 {
+                    b.HasOne("API.Models.Specialization", "Specialization")
+                        .WithMany()
+                        .HasForeignKey("SpecializationID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("API.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Specialization");
 
                     b.Navigation("User");
                 });
@@ -652,7 +654,7 @@ namespace API.Migrations
                     b.HasOne("API.Models.Faculty", "Faculty")
                         .WithMany()
                         .HasForeignKey("FacultyID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Faculty");
@@ -663,7 +665,7 @@ namespace API.Migrations
                     b.HasOne("API.Models.Group", "Group")
                         .WithMany()
                         .HasForeignKey("GroupID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("API.Models.User", "User")
@@ -677,14 +679,15 @@ namespace API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("API.Models.ExamRequest", b =>
+            modelBuilder.Entity("API.Models.User", b =>
                 {
-                    b.Navigation("ExamRequestRooms");
-                });
+                    b.HasOne("API.Models.Faculty", "Faculty")
+                        .WithMany()
+                        .HasForeignKey("FacultyID")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
-            modelBuilder.Entity("API.Models.Room", b =>
-                {
-                    b.Navigation("ExamRequestRooms");
+                    b.Navigation("Faculty");
                 });
 #pragma warning restore 612, 618
         }
