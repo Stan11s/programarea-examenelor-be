@@ -11,7 +11,7 @@ namespace API.Controllers
     public class ExamController : ControllerBase
     {
         private readonly ApiDbContext _context;
-        private readonly CourseMapper _courseMapper;  
+        private readonly CourseMapper _courseMapper;
 
         // Constructor
         public ExamController(ApiDbContext context, CourseMapper courseMapper)
@@ -24,6 +24,7 @@ namespace API.Controllers
         public async Task<IActionResult> GetCoursersForExamByUserID(int userId)
         {
             var user = await _context.Users.FindAsync(userId);
+
             if (user == null)
             {
                 return NotFound("User not found");
@@ -100,11 +101,7 @@ namespace API.Controllers
                 .Include(e => e.Assistant)
                     .ThenInclude(a => a.Department)
                 .Include(e => e.Session)
-                .Include(e => e.ExamRequestRooms)
-                    .ThenInclude(er => er.Room)
                 .ToListAsync();
-
-
 
                 if (examRequests == null || !examRequests.Any())
                 {
@@ -138,8 +135,6 @@ namespace API.Controllers
                     .Include(e => e.Assistant)
                         .ThenInclude(a => a.Department)
                     .Include(e => e.Session)
-                    .Include(e => e.ExamRequestRooms)
-                        .ThenInclude(er => er.Room)
                     .Where(e => e.Group.GroupID == groupId);
 
                 if (!string.IsNullOrEmpty(status))
@@ -182,9 +177,7 @@ namespace API.Controllers
                     .Include(e => e.Assistant)
                         .ThenInclude(a => a.Department)
                     .Include(e => e.Session)
-                    .Include(e => e.ExamRequestRooms)
-                        .ThenInclude(er => er.Room)
-                    .Where(e => e.Course.ProfID == profId);
+                    .Where(e => e.Course.ProfessorID == profId);
 
                 if (!string.IsNullOrEmpty(status))
                 {
@@ -211,28 +204,26 @@ namespace API.Controllers
         {
             try
             {
-                var rooms = await _context.Rooms
-                    .Include(r => r.Department)
-                    .Include(r => r.ExamRequestRooms)
-                        .ThenInclude(er => er.ExamRequest)
-                         .Take(10)
+                var requestedRooms = await _context.ExamRequestRooms
+                    .Include(er => er.Room)
+                    .Include(er => er.Room.Department)
+                    .Take(10)
                     .ToListAsync();
 
-                if (rooms == null || !rooms.Any())
+                if (requestedRooms == null || !requestedRooms.Any())
                 {
-                    return NotFound("No rooms found in the database.");
+                    return NotFound("No requestedRooms found in the database.");
                 }
 
-                var roomDTOs = rooms.Select(room => new
+                var roomDTOs = requestedRooms.Select(room => new
                 {
                     room.RoomID,
-                    room.Name,
-                    room.Location,
-                    room.Capacity,
-                    room.Description,
-                    room.CreationDate,
-                    DepartmentName = room.Department?.Name, 
-                    ExamRequestCount = room.ExamRequestRooms?.Count ?? 0
+                    room.Room.Name,
+                    room.Room.Location,
+                    room.Room.Capacity,
+                    room.Room.Description,
+                    DepartmentName = room.Room.Department?.Name,
+                    ExamRequestCount = requestedRooms.Count(rr => rr.RoomID == rr.Room.RoomID)
                 });
 
                 return Ok(roomDTOs);
@@ -242,6 +233,7 @@ namespace API.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
         [HttpGet("GetAssistentByCourse/{courseId}")]
         public async Task<IActionResult> GetAssistentByCourse(int courseId)
         {
@@ -253,7 +245,7 @@ namespace API.Controllers
                  .Where(l => l.CourseID == courseId) 
                  .Select(l => new ProfessorDTO
                  {
-                     ProfID = l.Professor.ProfID,
+                     ProfID = l.Professor.ProfessorID,
                      LastName = l.Professor.User.LastName,
                      FirstName = l.Professor.User.FirstName 
                  })

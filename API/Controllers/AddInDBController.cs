@@ -21,10 +21,10 @@ namespace API.Controllers
                 return BadRequest("User data is null.");
             }
 
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == user.Username);
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
             if (existingUser != null)
             {
-                return Conflict("A user with the same username already exists.");
+                return Conflict("A user with the same email already exists.");
             }
 
             await _context.Users.AddAsync(user);
@@ -184,7 +184,7 @@ namespace API.Controllers
             var labHolder = await _context.LabHolders
                 .Include(lh => lh.Course)
                 .Include(lh => lh.Professor)
-                .Where(lh => lh.ProfID == examRequestDto.AssistantID && lh.CourseID == examRequestDto.CourseID)
+                .Where(lh => lh.ProfessorID == examRequestDto.AssistantID && lh.CourseID == examRequestDto.CourseID)
                 .FirstOrDefaultAsync();
 
             if (labHolder == null)
@@ -208,14 +208,10 @@ namespace API.Controllers
                 Type = examRequestDto.Type,
                 Date = examRequestDto.Date,
                 TimeStart = examRequestDto.TimeStart,
-                Duration = examRequestDto.Duration,
+                TimeEnd = examRequestDto.Duration,
                 Details = examRequestDto.Details,
                 Status = examRequestDto.Status,
-                CreationDate = DateTime.UtcNow,
-                ExamRequestRooms = rooms.Select(r => new ExamRequestRoom
-                {
-                    RoomID = r.RoomID
-                }).ToList()
+                CreationDate = DateTime.UtcNow
             };
             examRequest.Session = session;
             examRequest.Course = course;
@@ -223,6 +219,19 @@ namespace API.Controllers
             examRequest.Assistant = labHolder.Professor;
 
             _context.ExamRequests.Add(examRequest);
+
+            // Insert Exam Requested Rooms into ExamRequestRooms table
+            foreach (var room in rooms)
+            {
+                var examRequestRooms = new ExamRequestRooms
+                {
+                    ExamRequestID = examRequest.ExamRequestID,
+                    RoomID = room.RoomID
+                };
+                _context.ExamRequestRooms.Add(examRequestRooms);
+            }
+
+            // Commit changes to the database
             await _context.SaveChangesAsync();
 
             return Ok(examRequest);

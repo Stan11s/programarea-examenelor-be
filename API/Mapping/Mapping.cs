@@ -20,7 +20,7 @@ namespace API.Mapping
         {
             return new ExamRequestDto
             {
-                Id = examRequest.RequestID,
+                Id = examRequest.ExamRequestID,
                 CourseName = examRequest.Course?.Title,
                 FirstNameProf = examRequest.Course?.Professor?.User?.FirstName,
                 LastNameProf = examRequest.Course?.Professor?.User?.LastName,
