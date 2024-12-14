@@ -26,7 +26,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Configurarea conexiunii la baza de date
-builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("APIConnectionString")));
+var connectionString = Environment.GetEnvironmentVariable("APIConnectionString") ?? builder.Configuration.GetConnectionString("APIConnectionString");
+builder.Services.AddDbContext<ApiDbContext>(options => options.UseSqlServer(connectionString));
 
 // Adaugă mapping-ul și serviciile
 builder.Services.AddScoped<CourseMapper>();
