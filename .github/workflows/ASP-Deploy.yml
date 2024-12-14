@@ -6,7 +6,7 @@ name: Build and deploy ASP.Net Core app to Azure Web App - OWCA-Exam-Planner
 on:
   push:
     branches:
-      - ASP-Deploy
+      - master
   workflow_dispatch:
 
 jobs:
